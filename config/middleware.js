@@ -1,8 +1,18 @@
-
-module.exports = ({env}) => ({
-  settings: {
-    history: {
-      enabled: true
-    }
+module.exports = [
+  'strapi::errors',
+  'strapi::security',
+  'strapi::cors',
+  'strapi::poweredBy',
+  'strapi::logger',
+  'strapi::query',
+  'strapi::body',
+  'strapi::session',
+  'strapi::favicon',
+  'strapi::public',
+  {
+    name: 'global::history',
+    config: {
+      enabled: true,
+    },
   }
-})
+];
