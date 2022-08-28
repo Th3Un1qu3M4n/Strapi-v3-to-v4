@@ -1,67 +1,97 @@
-module.exports = {
-  find: async (ctx) => {
-    let restaurants;
+// path: ./src/api/restaurant/controllers/restaurant.js
 
-    if (ctx.query._q) {
-      restaurants = await strapi.api.restaurant.services.restaurant.search(ctx.query);
-    } else {
-      restaurants = await strapi.api.restaurant.services.restaurant.find(ctx.query);
-    }
+const { createCoreController } = require("@strapi/strapi").factories;
 
-    restaurants = await Promise.all(
-      restaurants.map(async (restaurant) => {
-        restaurant.note = await strapi.api.review.services.review.average(restaurant.id);
+module.exports = createCoreController("api::restaurant.restaurant",({ strapi }) => ({
+    async find(ctx) {
+            let restaurants;
+            console.log("query is: ",ctx.query)
+        
+            if (ctx.query._q) {
+              restaurants = await strapi.api.restaurant.services.restaurant.search(ctx.query);
+            } else {
+              restaurants = await await super.find(ctx.query);
+            }
+            
+            // console.log(restaurants)
+            restaurants = await Promise.all(
+              restaurants.data.map(async (restaurant) => {
+                // restaurant.note = await strapi.api.review.services.review.average(restaurant.id);
+                console.log("single resturant:",restaurant)
+                return restaurant;
+              })
+            );
+        
+            return restaurants;
+          },
+  })
+);
 
-        return restaurant;
-      })
-    );
+//custom controller
+// module.exports = {
+//   find: async (ctx) => {
+//     let restaurants;
 
-    return restaurants;
-  },
+//     if (ctx.query._q) {
+//       restaurants = await strapi.api.restaurant.services.restaurant.search(ctx.query);
+//     } else {
+//       restaurants = await strapi.api.restaurant.services.restaurant.find(ctx.query);
+//     }
 
-  findOne: async (ctx) => {
-    const { id } = ctx.params;
-    let restaurant = await strapi.api.restaurant.services.restaurant.findOne({ id });
+//     restaurants = await Promise.all(
+//       restaurants.map(async (restaurant) => {
+//         restaurant.note = await strapi.api.review.services.review.average(restaurant.id);
 
-    if (!restaurant) {
-      return ctx.notFound();
-    }
+//         return restaurant;
+//       })
+//     );
 
-    restaurant.note = await strapi.api.review.services.review.average(restaurant.id);
+//     return restaurants;
+//   },
 
-    let noteDetails = await strapi
-      .query('review')
-      .model.query(function (qb) {
-        qb.where('restaurant', '=', restaurant.id);
-        qb.groupBy('note');
-        qb.select('note');
-        qb.count();
-      })
-      .fetchAll()
-      .then((res) => res.toJSON());
+//   findOne: async (ctx) => {
+//     const { id } = ctx.params;
+//     let restaurant = await strapi.api.restaurant.services.restaurant.findOne({ id });
 
-    restaurant.noteDetails = [];
+//     if (!restaurant) {
+//       return ctx.notFound();
+//     }
 
-    for (let i = 5; i > 0; i--) {
-      let detail = noteDetails.find((detail) => {
-        return detail.note === i;
-      });
+//     restaurant.note = await strapi.api.review.services.review.average(restaurant.id);
 
-      if (detail) {
-        detail = {
-          note: detail.note,
-          count: detail['count(*)'],
-        };
-      } else {
-        detail = {
-          note: i,
-          count: 0,
-        };
-      }
+//     let noteDetails = await strapi
+//       .query('review')
+//       .model.query(function (qb) {
+//         qb.where('restaurant', '=', restaurant.id);
+//         qb.groupBy('note');
+//         qb.select('note');
+//         qb.count();
+//       })
+//       .fetchAll()
+//       .then((res) => res.toJSON());
 
-      restaurant.noteDetails.push(detail);
-    }
+//     restaurant.noteDetails = [];
 
-    return restaurant;
-  }
-};
+//     for (let i = 5; i > 0; i--) {
+//       let detail = noteDetails.find((detail) => {
+//         return detail.note === i;
+//       });
+
+//       if (detail) {
+//         detail = {
+//           note: detail.note,
+//           count: detail['count(*)'],
+//         };
+//       } else {
+//         detail = {
+//           note: i,
+//           count: 0,
+//         };
+//       }
+
+//       restaurant.noteDetails.push(detail);
+//     }
+
+//     return restaurant;
+//   }
+// };
