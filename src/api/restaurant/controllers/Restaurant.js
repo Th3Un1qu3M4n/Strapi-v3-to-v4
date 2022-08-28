@@ -17,7 +17,11 @@ module.exports = createCoreController("api::restaurant.restaurant",({ strapi }) 
             restaurants = await Promise.all(
               restaurants.data.map(async (restaurant) => {
                 // restaurant.note = await strapi.api.review.services.review.average(restaurant.id);
-                console.log("single resturant:",restaurant)
+                const entity = await strapi.service('api::review.review').average(restaurant.id);
+                const sanitizedEntity = await this.sanitizeOutput(entity, ctx);
+                // console.log("sanitzied entity",sanitizedEntity);
+                restaurant.note =  sanitizedEntity;
+                // console.log("single resturant:",restaurant);
                 return restaurant;
               })
             );
